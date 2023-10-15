@@ -39,13 +39,13 @@ def num_parameters(model: nn.Module):
 class CausalSelfAttentionHead(nn.Module):
     def __init__(
         self,
-        input_emb_size: int,
+        input_size: int,
         query_key_emb_size: int,
-        output_ebm_size: int,
+        output_size: int,
         context_size: int,
         dropout_p: float = 0.0,
         bias: bool = True,
-        mechanism: str = "scaled_dot_product",
+        mechanism: str = "scaled_dot_product",  # seems to work better than others
         activation: Callable[[torch.Tensor], torch.Tensor] = F.relu,
         *args,
         **kwargs,
@@ -53,9 +53,9 @@ class CausalSelfAttentionHead(nn.Module):
         """Casual self-attention head. it is causal because information from the future isn't used for each token
 
         Args:
-            input_emb_size (int): size of input embedding
+            input_size (int): size of input embedding
             query_key_emb_size (int): query and key embedding size
-            output_ebm_size (int): embedding size of output (size of value)
+            output_size (int): embedding size of output (size of value)
             context_size (int): context length (how many of previous token are used to generate a new token)
             dropout_p (float, optional): dropout probability. Defaults to 0.0.
             bias (bool, optional): to use bias or not. Defaults to True.
@@ -78,9 +78,9 @@ class CausalSelfAttentionHead(nn.Module):
         self.activation = activation
         self.dropout_p = dropout_p
 
-        self.key = nn.Linear(input_emb_size, query_key_emb_size, bias=bias)
-        self.query = nn.Linear(input_emb_size, query_key_emb_size, bias=bias)
-        self.value = nn.Linear(input_emb_size, output_ebm_size, bias=bias)
+        self.key = nn.Linear(input_size, query_key_emb_size, bias=bias)
+        self.query = nn.Linear(input_size, query_key_emb_size, bias=bias)
+        self.value = nn.Linear(input_size, output_size, bias=bias)
 
         self.attn_dropout = nn.Dropout(dropout_p)
         self.resid_dropout = nn.Dropout(dropout_p)
@@ -106,7 +106,7 @@ class CausalSelfAttentionHead(nn.Module):
 
         if self.mechanism == "scaled_dot_product" and hasattr(
             torch.nn.functional, "scaled_dot_product_attention"
-        ):
+        ):  # calculated faster on gpu
             out = F.scaled_dot_product_attention(
                 q,
                 k,
@@ -189,3 +189,69 @@ class CausalSelfAttentionHead(nn.Module):
 
         out = self.resid_dropout(out)
         return out
+
+
+class MultiHeadAttention(nn.Module):
+    def __init__(
+        self,
+        input_size: int,
+        output_size: int,
+        query_key_emb_size: int,
+        value_emb_size: int,
+        num_head: int,
+        context_size: int,
+        dropout_p: float = 0.0,
+        head_class: type = CausalSelfAttentionHead,
+        activation: Callable[[torch.Tensor], torch.Tensor] = F.relu,
+        bias: bool = True,
+        *args,
+        **kwargs,
+    ) -> None:
+        """Multi-head attention. different attention classes can be used.
+
+        Args:
+            input_size (int): input size
+            output_size (int): output size
+            query_key_emb_size (int): query and key embedding size
+            value_emb_size (int): value embedding size
+            num_head (int): number of heads
+            context_size (int): context length
+            dropout_p (float, optional): dropout probability. Defaults to 0.0.
+            head_class (type, optional): attention class to use for heads. Defaults to CausalSelfAttentionHead.
+            activation (Callable[[torch.Tensor], torch.Tensor], optional): activation function. Defaults to F.relu.
+            bias (bool, optional): whether to use bias or not. Defaults to True.
+        """
+        super().__init__(*args, **kwargs)
+
+        self.activation = activation
+
+        self.heads = nn.ModuleList(
+            [
+                head_class(
+                    input_size=input_size,
+                    output_size=value_emb_size,
+                    query_key_emb_size=query_key_emb_size,
+                    context_size=context_size,
+                    dropout_p=dropout_p,
+                    activation=activation,
+                    bias=bias,
+                )
+                for _ in range(num_head)
+            ]
+        )
+        self.proj = nn.Linear(value_emb_size * num_head, output_size)
+        self.dropout = nn.Dropout(dropout_p)
+
+    def forward(self, x: torch.Tensor):
+        out = torch.cat([h(x) for h in self.heads], dim=-1)
+        out = self.dropout(self.activation(out))
+        out = self.proj(out)
+        out = self.dropout(out)
+
+        return out
+
+
+# TODO
+# Also implement vectorized multi-head attention
+# - It would be faster
+# - but it would not be as customizable as above implementation (only one type of head is allowed then)
