@@ -16,8 +16,6 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-__all__ = ["set_seed"]
-
 
 def set_seed(seed: int):
     """set seed for a   reproducible result
