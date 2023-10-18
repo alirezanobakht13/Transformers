@@ -472,8 +472,8 @@ class MyTransformer(nn.Module):
         else:
             activation = [activation for _ in range(num_layers)]
 
-        self.blocks = nn.ModuleList(
-            [
+        self.blocks = nn.Sequential(
+            *[
                 Block(
                     input_size=input_size if i == 0 else atten_output[i - 1],
                     context_size=context_size,
@@ -496,8 +496,7 @@ class MyTransformer(nn.Module):
         self.activation = activation[-1]
 
     def forward(self, x: torch.Tensor):
-        for block in self.blocks:
-            x = block(x)
+        x = self.blocks(x)
 
         x = self.l_norm(self.activation(x))
 
