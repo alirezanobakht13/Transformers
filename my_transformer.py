@@ -412,63 +412,63 @@ class MyTransformer(nn.Module):
         if isinstance(num_head, list):
             assert (
                 len(num_head) == num_layers
-            ), f"length of num_head ({len(num_head)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of num_head ({len(num_head)}) is not equal to num_layers ({num_layers})"
         else:
             num_head = [num_head for _ in range(num_layers)]
 
         if isinstance(atten_kqv_size, list):
             assert (
                 len(atten_kqv_size) == num_layers
-            ), f"length of atten_kqv_size ({len(atten_kqv_size)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of atten_kqv_size ({len(atten_kqv_size)}) is not equal to num_layers ({num_layers})"
         else:
             atten_kqv_size = [atten_kqv_size for _ in range(num_layers)]
 
         if isinstance(atten_output, list):
             assert (
                 len(atten_output) == num_layers
-            ), f"length of atten_output ({len(atten_output)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of atten_output ({len(atten_output)}) is not equal to num_layers ({num_layers})"
         else:
             atten_output = [atten_output for _ in range(num_layers)]
 
         if isinstance(mlp_hidden_size, list):
             assert (
                 len(mlp_hidden_size) == num_layers
-            ), f"length of mlp_hidden_size ({len(mlp_hidden_size)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of mlp_hidden_size ({len(mlp_hidden_size)}) is not equal to num_layers ({num_layers})"
         else:
             mlp_hidden_size = [mlp_hidden_size for _ in range(num_layers)]
 
         if isinstance(residual, list):
             assert (
                 len(residual) == num_layers
-            ), f"length of residual ({len(residual)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of residual ({len(residual)}) is not equal to num_layers ({num_layers})"
         else:
             residual = [residual for _ in range(num_layers)]
 
         if isinstance(atten_head_class, list):
             assert (
                 len(atten_head_class) == num_layers
-            ), f"length of atten_head_class ({len(atten_head_class)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of atten_head_class ({len(atten_head_class)}) is not equal to num_layers ({num_layers})"
         else:
             atten_head_class = [atten_head_class for _ in range(num_layers)]
 
         if isinstance(dropout_p, list):
             assert (
                 len(dropout_p) == num_layers
-            ), f"length of dropout_p ({len(dropout_p)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of dropout_p ({len(dropout_p)}) is not equal to num_layers ({num_layers})"
         else:
             dropout_p = [dropout_p for _ in range(num_layers)]
 
         if isinstance(bias, list):
             assert (
                 len(bias) == num_layers
-            ), f"length of bias ({len(bias)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of bias ({len(bias)}) is not equal to num_layers ({num_layers})"
         else:
             bias = [bias for _ in range(num_layers)]
 
         if isinstance(activation, list):
             assert (
                 len(activation) == num_layers
-            ), f"length of activation ({len(activation)}) is not equal to num_layers ({len(num_layers)})"
+            ), f"length of activation ({len(activation)}) is not equal to num_layers ({num_layers})"
         else:
             activation = [activation for _ in range(num_layers)]
 
